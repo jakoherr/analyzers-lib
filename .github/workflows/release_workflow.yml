@@ -1,0 +1,97 @@
+name: Release workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: "Version Type (major, minor, patch)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+env:
+  DOTNET_VERSION: "9.0.x"
+
+jobs:
+  tag_package_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - name: Create tag - dry run
+        id: taggerDryRun
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DRY_RUN: true
+          PRERELEASE: false
+          DEFAULT_BUMP: ${{ github.event.inputs.version_type }}
+
+      - name: Echo new tag
+        run: |
+          echo "The next tag version will be: ${{ steps.taggerDryRun.outputs.new_tag }}"
+      - name: Echo tag
+        run: |
+          echo "The current tag is: ${{ steps.taggerDryRun.outputs.tag }}"
+      - name: Echo part
+        run: |
+          echo "The version increment was: ${{ steps.taggerDryRun.outputs.part }}"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Create nuget package
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack NuGet package with version
+        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:PackageVersion=${{ steps.taggerDryRun.outputs.new_tag }}
+
+      - name: Publish package to GitHub Packages
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate
+
+        env:
+          DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER: 0
+
+      # Create Tag on repo
+      - name: Create Tag - final
+        id: taggerFinal
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          PRERELEASE: false
+          DEFAULT_BUMP: ${{ github.event.inputs.version_type }}
+
+      # Create Release
+      - name: Create Release
+        id: create_release
+        uses: comnoco/create-release-action@v2.0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.taggerDryRun.outputs.new_tag }}
+          release_name: Release ${{ steps.taggerDryRun.outputs.new_tag }}
+          draft: false
+          prerelease: false
