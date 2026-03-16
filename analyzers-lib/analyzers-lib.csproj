@@ -15,7 +15,7 @@
 		<Content Include="analyzers-lib.props">
 			<PackagePath>build</PackagePath>
 		</Content>
-		<Content Include="analyzers.ruleset">
+		<Content Include="stylecop.json;analyzers.ruleset">
 			<PackagePath>content</PackagePath>
 		</Content>
 	</ItemGroup>
