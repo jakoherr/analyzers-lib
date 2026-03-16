@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard1.1</TargetFramework>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<Version>1.0.3</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="analyzers-lib.props">
+			<PackagePath>build</PackagePath>
+		</Content>
+		<Content Include="analyzers.ruleset">
+			<PackagePath>content</PackagePath>
+		</Content>
+	</ItemGroup>
+</Project>

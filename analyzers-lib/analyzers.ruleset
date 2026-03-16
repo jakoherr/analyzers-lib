@@ -1,0 +1,10 @@
+﻿<?xml version="1.0"?>
+<RuleSet Name="StyleCop.Analyzers rules" ToolsVersion="14.0">
+    <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers.DocumentationRules">
+        <Rule Id="SA1633" Action="Hidden"/>
+        <Rule Id="SA1600" Action="Hidden"/>
+    </Rules>
+    <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
+        <Rule Id="CS1591" Action="Hidden"/>
+    </Rules>
+</RuleSet>
